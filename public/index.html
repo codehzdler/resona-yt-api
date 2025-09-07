@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resona API Key Activation</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔑 Resona API Key Activation</h1>
+    <p>Provide your YouTube API key to unlock free access to Resona.</p>
+
+    <form id="api-form" class="card">
+      <input type="text" id="apiKey" placeholder="Enter your YouTube API Key" required>
+      <button type="submit">Submit</button>
+    </form>
+
+    <div id="activation-box" class="hidden">
+      <h2 id="status-heading"></h2>
+      <p id="status-message"></p>
+      <p id="activation-code" class="activation-code"></p>
+      <button id="copy-btn" class="hidden">Copy Key</button>
+    </div>
+
+    <div class="links">
+      <h3>Need help?</h3>
+      <ul>
+        <li><a href="https://youtu.be/LLAZUTbc97I?si=lhlFFjkCRZaaTjb8" target="_blank">📺 Tutorial: How to get a YouTube API Key</a></li>
+        <li><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">🌐 Google Cloud Console – YouTube Data API v3</a></li>
+      </ul>
+    </div>
+
+    <div class="tutorial">
+      <h3>📖 Text Guide: How to Get Your YouTube API Key</h3>
+      <ol>
+        <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a> and sign in.</li>
+        <li>Create a new project and name it <b>Resona API</b>.</li>
+        <li>Enable the <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">YouTube Data API v3</a>.</li>
+        <li>Go to <b>APIs & Services > Credentials</b>, then click <b>Create Credentials > API Key</b>.</li>
+        <li>Copy the generated API key and paste it here in the form.</li>
+        <li>(Optional) Restrict your key for security and save.</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('api-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const apiKey = document.getElementById('apiKey').value;
+      const res = await fetch('/api/submit-key', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ apiKey })
+      });
+      const data = await res.json();
+
+      const box = document.getElementById('activation-box');
+      const heading = document.getElementById('status-heading');
+      const message = document.getElementById('status-message');
+      const code = document.getElementById('activation-code');
+      const copyBtn = document.getElementById('copy-btn');
+
+      box.classList.remove('hidden');
+
+      if (data.success) {
+        heading.innerText = "✅ Valid API Key!";
+        message.innerText = "Thank you for your contribution towards keeping Resona free for everyone 🎉";
+        code.innerText = "Your Activation Key: " + data.activationKey;
+        copyBtn.classList.remove('hidden');
+      } else {
+        heading.innerText = "❌ Invalid API Key!";
+        message.innerText = "The API key you entered is invalid. Please try again.";
+        code.innerText = "";
+        copyBtn.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', () => {
+      const text = document.getElementById('activation-code').innerText.replace("Your Activation Key: ", "");
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Activation key copied!");
+      });
+    });
+  </script>
+</body>
+</html>
