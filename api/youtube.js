@@ -1,17 +1,45 @@
 import fetch from 'node-fetch';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabase.js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const fallbackKey = process.env.YOUR_FALLBACK_KEY; // Your own key
+const fallbackKey = process.env.YOUR_FALLBACK_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Simple in-memory cache
+let cachedValidKeys = [];
+let cacheTime = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-async function getRandomKey() {
+async function isKeyValid(key) {
+  try {
+    const testUrl = `https://www.googleapis.com/youtube/v3/search?part=id&q=test&maxResults=1&key=${key}`;
+    const response = await fetch(testUrl);
+    const data = await response.json();
+    return !data.error;
+  } catch {
+    return false;
+  }
+}
+
+async function getValidKeys() {
+  const now = Date.now();
+  if (cachedValidKeys.length && now - cacheTime < CACHE_DURATION) return cachedValidKeys;
+
   const { data: keys } = await supabase.from('user_keys').select('api_key');
-  if (!keys || keys.length === 0) return fallbackKey;
-  const randomKey = keys[Math.floor(Math.random() * keys.length)].api_key;
-  return randomKey || fallbackKey;
+  const validKeys = [];
+
+  if (keys) {
+    for (const k of keys) {
+      const valid = await isKeyValid(k.api_key);
+      if (valid) validKeys.push(k.api_key);
+      else await supabase.from('user_keys').delete().eq('api_key', k.api_key); // Remove invalid
+    }
+  }
+
+  if (await isKeyValid(fallbackKey)) validKeys.push(fallbackKey);
+
+  cachedValidKeys = validKeys;
+  cacheTime = now;
+
+  return validKeys;
 }
 
 export default async function handler(req, res) {
@@ -19,7 +47,10 @@ export default async function handler(req, res) {
     const { query } = req.body;
     if (!query) return res.status(400).json({ error: 'Missing query' });
 
-    const key = await getRandomKey();
+    const validKeys = await getValidKeys();
+    if (!validKeys.length) return res.status(500).json({ error: 'No valid YouTube API keys available' });
+
+    const key = validKeys[Math.floor(Math.random() * validKeys.length)];
     const youtubeURL = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&key=${key}&maxResults=10`;
 
     const response = await fetch(youtubeURL);
