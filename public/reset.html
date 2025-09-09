@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resona - Reset Password</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-lg">
+    <h1 class="text-2xl font-bold text-center mb-6">Reset Password</h1>
+
+    <form id="resetForm" class="space-y-4">
+      <input type="email" id="resetEmail" placeholder="Email" required class="w-full p-3 border rounded-lg" />
+      <input type="text" id="resetApiKey" placeholder="API Key" required class="w-full p-3 border rounded-lg" />
+      <input type="password" id="newPassword" placeholder="New Password" required class="w-full p-3 border rounded-lg" />
+      <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" required class="w-full p-3 border rounded-lg" />
+      <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700">Reset Password</button>
+    </form>
+
+    <p id="resetMessage" class="text-center mt-4 text-sm"></p>
+
+    <div class="mt-4 text-center">
+      <a href="index.html" class="text-blue-600 underline">Back to register</a>
+    </div>
+  </div>
+
+  <script src="supabase.js"></script>
+  <script>
+    async function hashPassword(password) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password);
+      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    document.getElementById("resetForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("resetEmail").value;
+      const apiKey = document.getElementById("resetApiKey").value;
+      const newPassword = document.getElementById("newPassword").value;
+      const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+      const msg = document.getElementById("resetMessage");
+
+      if (newPassword !== confirmNewPassword) {
+        msg.textContent = "❌ Passwords do not match.";
+        msg.className = "text-red-600 text-center mt-4";
+        return;
+      }
+
+      msg.textContent = "⏳ Verifying...";
+      msg.className = "text-gray-600 text-center mt-4";
+
+      const { data: user, error } = await supabase
+        .from("user_accounts")
+        .select("*")
+        .eq("email", email)
+        .eq("api_key", apiKey)
+        .single();
+
+      if (error || !user) {
+        msg.textContent = "❌ Invalid email or API key.";
+        msg.className = "text-red-600 text-center mt-4";
+        return;
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+      const { error: updateError } = await supabase
+        .from("user_accounts")
+        .update({ password: hashedPassword })
+        .eq("email", email);
+
+      if (updateError) {
+        msg.textContent = "❌ " + updateError.message;
+        msg.className = "text-red-600 text-center mt-4";
+      } else {
+        msg.textContent = "✅ Password reset successful!";
+        msg.className = "text-green-600 text-center mt-4";
+      }
+    });
+  </script>
+</body>
+</html>
