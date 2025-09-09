@@ -3,82 +3,97 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resona - Register</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <script src="supabase.js"></script>
+  <title>Resona Registration</title>
+  <style>
+    body { font-family: sans-serif; background: #f5f5f5; padding: 30px; }
+    .form-container { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
+    input { width: 100%; padding: 8px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc;}
+    button { padding: 10px 20px; border-radius: 5px; border: none; background: #4caf50; color: white; cursor: pointer;}
+    button:hover { background: #45a049; }
+    .status { margin-top: 10px; font-size: 0.9em; }
+    a { color: #1a73e8; text-decoration: none; }
+  </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white shadow-lg rounded-xl p-8 w-full max-w-lg">
-    <h1 class="text-2xl font-bold text-center mb-6">Register for Resona</h1>
+<body>
 
-    <form id="registerForm" class="space-y-4">
-      <input type="email" id="email" placeholder="Email" required class="w-full p-3 border rounded-lg" />
-      <input type="password" id="password" placeholder="Password" required class="w-full p-3 border rounded-lg" />
-      <input type="password" id="confirmPassword" placeholder="Confirm Password" required class="w-full p-3 border rounded-lg" />
-      <input type="text" id="apiKey" placeholder="YouTube API Key" required class="w-full p-3 border rounded-lg" />
-      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700">Register</button>
+  <div class="form-container">
+    <h2>Register</h2>
+    <form id="registerForm">
+      <input type="email" id="email" placeholder="Email" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+      <input type="text" id="apiKey" placeholder="Your YouTube API Key" required>
+      <button type="submit">Register</button>
     </form>
-
-    <p id="registerMessage" class="text-center mt-4 text-sm"></p>
-
-    <!-- Tutorial Section -->
-    <div class="mt-6 border-t pt-4">
-      <h2 class="font-semibold mb-2">📖 How to Get a YouTube API Key</h2>
-      <ol class="list-decimal ml-5 text-sm space-y-1">
-        <li>Go to <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" class="text-blue-600 underline">Google Cloud Console</a></li>
-        <li>Enable <strong>YouTube Data API v3</strong>.</li>
-        <li>Create a new API Key from <em>APIs & Services → Credentials</em>.</li>
-        <li>Copy your key and paste it here in the form.</li>
+    <div class="status" id="status"></div>
+    <p>Forgot password? <a href="reset.html">Reset here</a></p>
+    <div class="mt-4">
+      <h3>📖 How to Get a YouTube API Key</h3>
+      <ol>
+        <li>Go to <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console</a></li>
+        <li>Enable YouTube Data API v3</li>
+        <li>Create an API key</li>
+        <li>Paste it here in the form</li>
       </ol>
-      <p class="mt-2 text-sm">🎥 Video tutorial: <a href="https://youtu.be/LLAZUTbc97I?si=lhlFFjkCRZaaTjb8" target="_blank" class="text-blue-600 underline">Watch here</a></p>
-    </div>
-
-    <div class="mt-4 text-center">
-      <a href="reset.html" class="text-blue-600 underline">Forgot password?</a>
+      <p>🎥 Video tutorial: <a href="https://youtu.be/LLAZUTbc97I?si=lhlFFjkCRZaaTjb8" target="_blank">Watch here</a></p>
     </div>
   </div>
 
+  <!-- Supabase Library -->
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <!-- Your Supabase initialization -->
   <script src="supabase.js"></script>
-  <script>
-    async function hashPassword(password) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
-    }
 
-    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+  <script>
+    const form = document.getElementById("registerForm");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      status.textContent = "⏳ Checking passwords…";
+
       const email = document.getElementById("email").value;
       const password = document.getElementById("password").value;
       const confirmPassword = document.getElementById("confirmPassword").value;
       const apiKey = document.getElementById("apiKey").value;
-      const msg = document.getElementById("registerMessage");
 
-      if (password !== confirmPassword) {
-        msg.textContent = "❌ Passwords do not match.";
-        msg.className = "text-red-600 text-center mt-4";
+      if(password !== confirmPassword){
+        status.textContent = "❌ Passwords do not match";
         return;
       }
 
-      msg.textContent = "⏳ Registering...";
-      msg.className = "text-gray-600 text-center mt-4";
+      status.textContent = "⏳ Verifying API key…";
 
-      const hashedPassword = await hashPassword(password);
+      // Simple test of API key (check quota endpoint)
+      try {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=id&id=dQw4w9WgXcQ&key=${apiKey}`);
+        const data = await res.json();
+        if(data.error){
+          status.textContent = "❌ Invalid YouTube API key";
+          return;
+        }
+      } catch(err){
+        status.textContent = "❌ Error testing API key";
+        return;
+      }
 
-      const { data, error } = await supabase
-        .from("user_accounts")
-        .insert([{ email, password: hashedPassword, api_key: apiKey }]);
+      status.textContent = "⏳ Registering user…";
 
-      if (error) {
-        msg.textContent = error.code === "23505" ? "❌ Email already in use." : "❌ " + error.message;
-        msg.className = "text-red-600 text-center mt-4";
-      } else {
-        msg.textContent = "✅ Registration successful!";
-        msg.className = "text-green-600 text-center mt-4";
+      // Insert into Supabase
+      try {
+        const { error } = await supabase.from("user_accounts").insert([{ email, password, api_key: apiKey }]);
+        if(error){
+          if(error.code === "23505") status.textContent = "❌ Email already in use";
+          else status.textContent = "❌ " + error.message;
+          return;
+        }
+        status.textContent = "✅ Registration successful! Thank you for contributing your API key!";
+        form.reset();
+      } catch(err){
+        status.textContent = "❌ " + err.message;
       }
     });
   </script>
+
 </body>
 </html>
