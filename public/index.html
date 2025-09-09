@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Resona Auth Demo</title>
-  <link rel="stylesheet" href="styles.css" />
-  <script src="https://unpkg.com/@supabase/supabase-js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resona Auth</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h1>Resona API Key Contribution</h1>
+<body class="bg-gradient-to-r from-purple-600 to-indigo-700 min-h-screen flex items-center justify-center">
+  <div class="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md space-y-6">
+    <h1 class="text-2xl font-bold text-center text-indigo-700">Resona Account</h1>
+    <p class="text-sm text-gray-500 text-center">Register or reset your password</p>
 
-    <div id="auth-section">
-      <h2>Login / Register</h2>
-      <input id="email" type="email" placeholder="Email" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="signUp()">Register</button>
-      <button onclick="signIn()">Login</button>
-      <p id="auth-message"></p>
+    <!-- Register Form -->
+    <div id="register-section" class="space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800">Register</h2>
+      <input id="reg-email" type="email" placeholder="Email" class="w-full p-2 border rounded-lg">
+      <input id="reg-password" type="password" placeholder="Password" class="w-full p-2 border rounded-lg">
+      <input id="reg-apikey" type="text" placeholder="API Key" class="w-full p-2 border rounded-lg">
+      <button onclick="registerUser()" class="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700">Register</button>
+      <p id="register-message" class="text-sm text-center"></p>
     </div>
 
-    <div id="form-section" style="display:none;">
-      <h2>Submit your YouTube API Key</h2>
-      <p>Follow this tutorial: <a href="https://youtu.be/LLAZUTbc97I" target="_blank">How to get API key</a></p>
-      <p>Or go directly: <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console</a></p>
-      <input id="apiKeyInput" type="text" placeholder="Enter your YouTube API Key" />
-      <button onclick="submitKey()">Submit</button>
-      <p id="form-message"></p>
+    <hr class="border-gray-300">
+
+    <!-- Reset Password Form -->
+    <div id="reset-section" class="space-y-4">
+      <h2 class="text-lg font-semibold text-gray-800">Reset Password</h2>
+      <input id="reset-email" type="email" placeholder="Email" class="w-full p-2 border rounded-lg">
+      <input id="reset-apikey" type="text" placeholder="API Key" class="w-full p-2 border rounded-lg">
+      <input id="reset-password" type="password" placeholder="New Password" class="w-full p-2 border rounded-lg">
+      <button onclick="resetPassword()" class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700">Reset Password</button>
+      <p id="reset-message" class="text-sm text-center"></p>
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>
