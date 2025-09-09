@@ -3,82 +3,33 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Resona API Contribution</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #f9fafb; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-    .container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-    input { padding: 10px; width: 100%; margin: 10px 0; border-radius: 8px; border: 1px solid #ccc; }
-    button { padding: 10px 15px; border: none; border-radius: 8px; background: #2563eb; color: white; cursor: pointer; }
-    button:hover { background: #1d4ed8; }
-    #activation-box { margin-top: 20px; padding: 15px; border-radius: 8px; background: #f3f4f6; display: none; }
-    #activation-code { font-weight: bold; color: #2563eb; margin-top: 10px; }
-  </style>
+  <title>Resona Auth Demo</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/@supabase/supabase-js"></script>
 </head>
 <body>
   <div class="container">
-    <h2>Contribute Your YouTube API Key</h2>
-    <p>Help keep Resona running for free by sharing your YouTube API key.</p>
-    <form id="api-form">
-      <input type="text" id="apiKey" placeholder="Enter your YouTube API key" required />
-      <button type="submit">Submit</button>
-    </form>
+    <h1>Resona API Key Contribution</h1>
 
-    <div id="activation-box">
-      <h3 id="status-heading"></h3>
-      <p id="status-message"></p>
-      <p id="activation-code"></p>
-      <button id="copy-btn" class="hidden">Copy Code</button>
+    <div id="auth-section">
+      <h2>Login / Register</h2>
+      <input id="email" type="email" placeholder="Email" />
+      <input id="password" type="password" placeholder="Password" />
+      <button onclick="signUp()">Register</button>
+      <button onclick="signIn()">Login</button>
+      <p id="auth-message"></p>
+    </div>
+
+    <div id="form-section" style="display:none;">
+      <h2>Submit your YouTube API Key</h2>
+      <p>Follow this tutorial: <a href="https://youtu.be/LLAZUTbc97I" target="_blank">How to get API key</a></p>
+      <p>Or go directly: <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank">Google Cloud Console</a></p>
+      <input id="apiKeyInput" type="text" placeholder="Enter your YouTube API Key" />
+      <button onclick="submitKey()">Submit</button>
+      <p id="form-message"></p>
     </div>
   </div>
 
-  <script>
-    document.getElementById("api-form").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const apiKey = document.getElementById("apiKey").value;
-
-      const box = document.getElementById("activation-box");
-      const heading = document.getElementById("status-heading");
-      const message = document.getElementById("status-message");
-      const code = document.getElementById("activation-code");
-      const copyBtn = document.getElementById("copy-btn");
-
-      // Step 1: Show testing
-      box.style.display = "block";
-      heading.innerText = "🔍 Testing your API Key...";
-      message.innerText = "Please wait while we verify your key with YouTube.";
-      code.innerText = "";
-      copyBtn.style.display = "none";
-
-      try {
-        const res = await fetch("/api/submit-key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ apiKey }),
-        });
-        const data = await res.json();
-
-        if (data.success) {
-          heading.innerText = "✅ Test Passed!";
-          message.innerText = data.message;
-          code.innerText = "Your Activation Key: " + data.activationKey;
-          copyBtn.style.display = "inline-block";
-        } else {
-          heading.innerText = "❌ Test Failed!";
-          message.innerText = data.message;
-          code.innerText = "";
-          copyBtn.style.display = "none";
-        }
-      } catch (err) {
-        heading.innerText = "❌ Error!";
-        message.innerText = "Something went wrong: " + err.message;
-      }
-    });
-
-    document.getElementById("copy-btn").addEventListener("click", () => {
-      const codeText = document.getElementById("activation-code").innerText.replace("Your Activation Key: ", "");
-      navigator.clipboard.writeText(codeText);
-      alert("Activation key copied!");
-    });
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
