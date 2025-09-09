@@ -1,12 +1,10 @@
 {
-  "name": "resona-supabase-auth",
+  "name": "resona-auth-form-email",
   "version": "1.0.0",
   "scripts": {
-    "dev": "vercel dev",
-    "start": "vercel dev"
+    "start": "serve public"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.7",
-    "node-fetch": "^3.3.2"
+    "serve": "^14.0.1"
   }
 }
