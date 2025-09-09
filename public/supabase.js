@@ -1,5 +1,6 @@
 <!-- Load Supabase client from CDN -->
 <script src="https://unpkg.com/@supabase/supabase-js"></script>
+<script src="supabase.js"></script>
 <script>
   // ⚠️ Replace these with your actual Supabase project values
   const SUPABASE_URL = "https://wsekbfojaqfumpkmzefu.supabase.co";  
