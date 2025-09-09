@@ -41,10 +41,15 @@
 
   <!-- Supabase Library -->
   <script src="https://unpkg.com/@supabase/supabase-js"></script>
-  <!-- Your Supabase initialization -->
-  <script src="supabase.js"></script>
 
+  <!-- Inline Supabase initialization -->
   <script>
+    const SUPABASE_URL = "https://wsekbfojaqfumpkmzefu.supabase.co";  
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndzZWtiZm9qYXFmdW1wa216ZWZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcyNTE4OTgsImV4cCI6MjA3MjgyNzg5OH0.nmOOPd-1fw-78iIgbWtLUdy5O_g9Q8YxwKNEH1d6TzU";
+    
+    window.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log("✅ Supabase client initialized");
+
     const form = document.getElementById("registerForm");
     const status = document.getElementById("status");
 
@@ -64,7 +69,6 @@
 
       status.textContent = "⏳ Verifying API key…";
 
-      // Simple test of API key (check quota endpoint)
       try {
         const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=id&id=dQw4w9WgXcQ&key=${apiKey}`);
         const data = await res.json();
@@ -79,7 +83,6 @@
 
       status.textContent = "⏳ Registering user…";
 
-      // Insert into Supabase
       try {
         const { error } = await supabase.from("user_accounts").insert([{ email, password, api_key: apiKey }]);
         if(error){
