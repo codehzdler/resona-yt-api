@@ -8,16 +8,6 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default async function handler(req, res) {
-  // ✅ CORS headers
-  res.setHeader("Access-Control-Allow-Origin", "*"); // allow all origins or restrict to frontend
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-
-  // Handle preflight OPTIONS request
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, error: "Method not allowed" });
   }
@@ -34,7 +24,7 @@ export default async function handler(req, res) {
       .from("user_accounts")
       .select("*")
       .eq("email", email)
-      .eq("password", password) // plaintext for now
+      .eq("password", password)  // plaintext for now
       .single();
 
     if (authError || !user) {
@@ -66,7 +56,7 @@ export default async function handler(req, res) {
     // 5️⃣ Return video info
     return res.status(200).json({
       success: true,
-      video: videoData.items[0].snippet,
+      video: videoData.items[0].snippet
     });
 
   } catch (err) {
