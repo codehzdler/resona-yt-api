@@ -1,6 +1,6 @@
 
 <script src="https://unpkg.com/@supabase/supabase-js"></script>
-<script src="supabase.js"></script>
+
 <script>
   
   const SUPABASE_URL = "https://wsekbfojaqfumpkmzefu.supabase.co";  
