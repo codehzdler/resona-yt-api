@@ -15,14 +15,13 @@ export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Headers", "Content-Type,Authorization");
 
   if (req.method === "OPTIONS") return res.status(200).end();
-
   if (req.method !== "POST")
     return res.status(405).json({ success: false, error: "Method not allowed" });
 
   const { email, password, videoId } = req.body;
 
-  if (!email || !password || !videoId)
-    return res.status(400).json({ success: false, error: "Missing fields" });
+  if (!email || !password)
+    return res.status(400).json({ success: false, error: "Missing email or password" });
 
   try {
     // 1️⃣ Authenticate user
@@ -34,9 +33,7 @@ export default async function handler(req, res) {
       .single();
 
     if (authError || !user)
-      return res
-        .status(401)
-        .json({ success: false, error: "Invalid email or password" });
+      return res.status(401).json({ success: false, error: "Invalid email or password" });
 
     // 2️⃣ Get all API keys
     const { data: keys, error: keysError } = await supabase
@@ -44,24 +41,27 @@ export default async function handler(req, res) {
       .select("api_key");
 
     if (keysError || !keys || keys.length === 0)
-      return res
-        .status(500)
-        .json({ success: false, error: "No API keys available" });
+      return res.status(500).json({ success: false, error: "No API keys available" });
 
     // 3️⃣ Pick a random API key
     const randomKey = keys[Math.floor(Math.random() * keys.length)].api_key;
 
-    // 4️⃣ Call YouTube API
+    // 4️⃣ If no videoId, return API key only (login)
+    if (!videoId) {
+      return res.status(200).json({
+        success: true,
+        api_key: randomKey,
+      });
+    }
+
+    // 5️⃣ If videoId provided, fetch YouTube video
     const youtubeRes = await fetch(
       `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${randomKey}`
     );
     const videoData = await youtubeRes.json();
 
-    // 5️⃣ Handle errors and missing items
     if (videoData.error)
-      return res
-        .status(403)
-        .json({ success: false, error: videoData.error.message });
+      return res.status(403).json({ success: false, error: videoData.error.message });
 
     if (!videoData.items || videoData.items.length === 0)
       return res.status(404).json({ success: false, error: "Video not found" });
